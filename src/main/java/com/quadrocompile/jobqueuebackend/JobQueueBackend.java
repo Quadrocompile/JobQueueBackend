@@ -12,10 +12,10 @@ public class JobQueueBackend {
 
     public static void main(String[] args) throws Exception{
         /* for testing the scheduler */
-        /*
+
         taskTest();
         System.exit(0);
-        */
+
 
         /* for running the jetty server */
         runServer();
