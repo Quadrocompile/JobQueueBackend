@@ -1,13 +1,34 @@
 package com.quadrocompile.jobqueuebackend.annopipeQueues;
 
-import java.util.List;
+import org.json.JSONObject;
 
 public class AnnotationSentenceMock {
     private String sentence;
-    private List<PipelineStage> nextStages;
+    private JSONObject json;
 
-    public AnnotationSentenceMock(String sentence,List<PipelineStage> nextStages){
+    public AnnotationSentenceMock(String sentence){
         this.sentence=sentence;
-        this.nextStages=nextStages;
+        this.json=new JSONObject();
+    }
+
+    public String getSentence() {
+        return sentence;
+    }
+
+    public void setSentence(String sentence) {
+        this.sentence = sentence;
+    }
+
+    public JSONObject getJson() {
+        return json;
+    }
+
+    public void setJson(JSONObject json) {
+        this.json = json;
+    }
+
+    @Override
+    public String toString() {
+        return sentence;
     }
 }
