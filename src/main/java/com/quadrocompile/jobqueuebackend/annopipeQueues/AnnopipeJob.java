@@ -77,4 +77,13 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
         }
 
     }
+
+    public boolean isFinished(){
+        if(stageMap.containsKey(PipelineStage.FINISHED)){
+            return stageMap.get(PipelineStage.FINISHED).size()==sentenceList.size();
+        }
+        else {
+            System.out.println("Job "+jobID+" not finished yet!");
+            return false;}
+    }
 }
