@@ -4,7 +4,8 @@ public enum PipelineStage {
 
     TOKENIZER("Tokenizer"),
     TREETAGGER("Treetagger"),
-    BERKELEY_PARSER("Berkeley Parser");
+    BERKELEY_PARSER("Berkeley Parser"),
+    FINISHED("No next Stage");
 
     String type;
     PipelineStage(String type) {

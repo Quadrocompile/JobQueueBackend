@@ -1,24 +1,23 @@
-package com.quadrocompile.jobqueuebackend.model;
+package com.quadrocompile.jobqueuebackend.annopipeQueues;
 
-import com.quadrocompile.jobqueuebackend.annopipeQueues.AnnotationSentenceMock;
-import com.quadrocompile.jobqueuebackend.annopipeQueues.PipelineStage;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class MockAnnopipeJobForPipelineStage implements Callable<MockAnnopipeJobForPipelineStage> {
-    private MockAnnopipeJob job;
+public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
+    private AnnopipeJob job;
     private PipelineStage stage;
 
-    MockAnnopipeJobForPipelineStage(MockAnnopipeJob job, PipelineStage stage){
+    StageBoundAnnopipeJob(AnnopipeJob job, PipelineStage stage){
         this.job=job;
         this.stage=stage;
 
     }
 
     @Override
-    public MockAnnopipeJobForPipelineStage call()  {
+    public StageBoundAnnopipeJob call()  {
         List<AnnotationSentenceMock> sentences=job.getStageMap().get(stage);
 
         List<AnnotationSentenceMock>batch=sentences.subList(0,Math.min(job.getBatchSize(),sentences.size()));
@@ -34,12 +33,33 @@ public class MockAnnopipeJobForPipelineStage implements Callable<MockAnnopipeJob
                 parse(batch);
                 break;
         }
-        pushToNextStage(batch);
-        sentences.removeAll(batch);
-        return null;
+        try {
+            pushToNextStage(batch);
+            sentences.removeAll(batch);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return this;
     }
 
-    private void pushToNextStage(List<AnnotationSentenceMock> sentences) {
+    //push the processed sentences into the next pipeline stage
+    private void pushToNextStage(List<AnnotationSentenceMock> sentences) throws Exception {
+        PipelineStage nextStage=job.getNextStage(stage);
+        PipelineSlaveScheduler nextStageScheduler= PipelineMasterScheduler.getSchedulerForStage(nextStage);
+
+        //add to schedulers queue, if not present and not finished
+        if(!job.getStageMap().containsKey(nextStage)&&nextStage!=PipelineStage.FINISHED){
+            nextStageScheduler.addJob(new StageBoundAnnopipeJob(job,nextStage));
+        }
+
+        //add to stagemap under the next Stage (key)
+        Map<PipelineStage, List<AnnotationSentenceMock>> stageMap=job.getStageMap();
+        if(stageMap.containsKey(nextStage)){
+                stageMap.get(nextStage).addAll(sentences);
+        }else {
+            stageMap.put(nextStage,sentences);
+        }
 
     }
 

@@ -29,6 +29,6 @@ public class AnnotationSentenceMock {
 
     @Override
     public String toString() {
-        return sentence;
+        return json.toString();
     }
 }
