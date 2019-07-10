@@ -59,6 +59,7 @@ public class PipelineMasterScheduler implements Runnable {
     public void run() {
         try{
             while(!Thread.interrupted()) {
+                System.out.println("Master Scheduler: "+sumbitQueue.size()+" jobs waiting in queue and "+jobTasks.size()+" jobs running");
                 // Iterate all tasks and check if some of them are finished
                 Iterator<FutureTask<AnnopipeJob>> it = jobTasks.iterator();
                 while (it.hasNext()) {

@@ -41,6 +41,7 @@ public class PipelineSlaveScheduler implements Runnable {
     public void run() {
         try{
             while(!Thread.interrupted()) {
+                System.out.println(pipelineStage+": "+sumbitQueue.size()+" jobs waiting in queue and "+jobTasks.size()+" jobs running");
                 // Iterate all tasks and check if some of them are finished
                 Iterator<FutureTask<StageBoundAnnopipeJob>> it = jobTasks.iterator();
                 while (it.hasNext()) {

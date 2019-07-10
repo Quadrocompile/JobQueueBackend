@@ -96,4 +96,9 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
             System.out.println("Job "+jobID+" not finished yet!");
             return false;}
     }
+
+    @Override
+    public String toString() {
+        return sentenceList.toString();
+    }
 }
