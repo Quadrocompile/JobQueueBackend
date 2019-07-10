@@ -25,7 +25,11 @@ public class AnnopipeQueueTest {
         Thread.sleep(200);
         masterScheduler.addJob(job4);
         Thread.sleep(10000);
-        System.out.println(PipelineMasterScheduler.getFinishedJobs());
+        List<AnnopipeJob> finishedSentences=PipelineMasterScheduler.getFinishedJobs();
+        for (AnnopipeJob ajob:finishedSentences
+             ) {
+            System.out.println("Job '"+ajob.getJobID()+"': "+ajob);
+        }
 
     }
     private static List<AnnotationSentenceMock> createMockSentences(int i, String person) {

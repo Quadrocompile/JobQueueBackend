@@ -83,8 +83,13 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     private void parse(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
             System.out.println("Parsing sentence "+sentences.get(i));
-            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("ID"+i);
-            jsonObject.put("PARSE"+i,"PARSE_THAT_SHIT"+i);
+            AnnotationSentenceMock sentence=sentences.get(i);
+            JSONObject sentenceJson=sentence.getJson();
+            for (int j = 0; j <sentenceJson.keySet().size() ; j++) {
+                JSONObject token=sentenceJson.getJSONObject("ID"+j);
+                token.put("PARSE"+j,"PARSE_THAT_SHIT"+j);
+            }
+
         }
 
     }
@@ -93,8 +98,13 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     private void tag(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
             System.out.println("Tagging sentence "+sentences.get(i));
-            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("ID"+i);
-            jsonObject.put("TAG"+i,"TAG_THAT_SHIT"+i);
+            AnnotationSentenceMock sentence=sentences.get(i);
+            JSONObject sentenceJson=sentence.getJson();
+            for (int j = 0; j <sentenceJson.keySet().size() ; j++) {
+                JSONObject token=sentenceJson.getJSONObject("ID"+j);
+                token.put("TAG"+j,"TAG_THAT_SHIT"+j);
+            }
+
         }
     }
 
