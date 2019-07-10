@@ -23,7 +23,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
 
     @Override
     public StageBoundAnnopipeJob call()  {
-        System.out.println("Als Stagebound Job("+stage+") ausgeführt!");
+        //System.out.println("Als Stagebound Job("+stage+") ausgeführt!");
         LinkedBlockingQueue<AnnotationSentenceMock> sentences=job.getStageMap().get(stage);
         List<AnnotationSentenceMock> batch=new ArrayList<>();
         for (int i = 0; i <job.getBatchSize() ; i++) {
@@ -65,7 +65,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
         //add to schedulers queue, if not present and not finished
         if(!job.getStageMap().containsKey(nextStage)&&nextStage!=PipelineStage.FINISHED){
             nextStageScheduler.addJob(new StageBoundAnnopipeJob(job,nextStage));
-            System.out.println("Job "+getJobID()+" finished in stage "+stage);
+            //System.out.println("Job "+getJobID()+" finished in stage "+stage);
         }
 
         //add to stagemap under the next Stage (key)
@@ -75,7 +75,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
         }else {
             stageMap.put(nextStage,new LinkedBlockingQueue<>(sentences));
         }
-        System.out.println("Push job "+getJobID()+" to next stage: "+nextStage);
+        //System.out.println("Push job "+getJobID()+" to next stage: "+nextStage);
 
     }
 
@@ -118,7 +118,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
             return job.getStageMap().get(stage).size()==job.getSentenceList().size()||job.isFinished();
         }
         else {
-            System.out.println("Job "+getJobID()+" not finished yet!");
+            //System.out.println("Job "+getJobID()+" not finished yet!");
             return false;}
     }
 }

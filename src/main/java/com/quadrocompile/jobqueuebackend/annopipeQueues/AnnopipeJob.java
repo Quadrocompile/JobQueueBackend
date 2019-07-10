@@ -35,13 +35,13 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
 
     @Override
     public AnnopipeJob call()  {
-        System.out.println("Als AnnopipeJob ausgeführt");
+        //System.out.println("Als AnnopipeJob ausgeführt");
 
         PipelineStage firstStage=stages.get(0);
         if(!stageMap.containsKey(firstStage)){
             stageMap.put(firstStage,new LinkedBlockingQueue<>(sentenceList));
             PipelineMasterScheduler.getSchedulerForStage(firstStage).addJob(new StageBoundAnnopipeJob(this,firstStage));
-            System.out.println("An Scheduler für "+firstStage+" übergeben.");
+            //System.out.println("An Scheduler für "+firstStage+" übergeben.");
         }else{
             //System.out.println("Job "+jobID+" schon in der Pipeline vorhanden!");
         }
@@ -93,7 +93,7 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
             return stageMap.get(PipelineStage.FINISHED).size()==sentenceList.size();
         }
         else {
-            System.out.println("Job "+jobID+" not finished yet!");
+            //System.out.println("Job "+jobID+" not finished yet!");
             return false;}
     }
 

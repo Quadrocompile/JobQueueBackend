@@ -22,6 +22,10 @@ public class PipelineMasterScheduler implements Runnable {
     private final static List<PipelineSlaveScheduler> stageScheduler=new ArrayList<>();
     private final static List<AnnopipeJob> finishedJobs=new ArrayList<>();
 
+    public static List<AnnopipeJob> getFinishedJobs() {
+        return finishedJobs;
+    }
+
     public PipelineMasterScheduler(){
         // Initialize with a number of worker threads equal to the number of available cpu threads
         this(1);
@@ -74,8 +78,10 @@ public class PipelineMasterScheduler implements Runnable {
                         if(!finishedJob.isFinished()) {
                             sumbitQueue.offer(finishedJob);
                         }else{
+                            System.out.println("SCHEDULER: Finished jobs "+finishedJob.getJobID());
                             finishedJobs.add(finishedJob);
                         }
+
                     }
                 }
 

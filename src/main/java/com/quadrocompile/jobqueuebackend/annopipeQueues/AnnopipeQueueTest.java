@@ -25,10 +25,7 @@ public class AnnopipeQueueTest {
         Thread.sleep(200);
         masterScheduler.addJob(job4);
         Thread.sleep(10000);
-        System.out.println(job1);
-        System.out.println(job2);
-        System.out.println(job3);
-        System.out.println(job4);
+        System.out.println(PipelineMasterScheduler.getFinishedJobs());
 
     }
     private static List<AnnotationSentenceMock> createMockSentences(int i, String person) {
