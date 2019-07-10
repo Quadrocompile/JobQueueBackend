@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 //der übergreordnete JobScheduler; er leitet die Jobs zu ihren einzelnen SlaveSchedulern für den jeweiligen Stage (Tokenizer etc) weiter
 public class PipelineMasterScheduler implements Runnable {
-    private static String[] animals={"Kater","Hund","Kolibri","Alligator","Ameisenbär","Eichenprozessionsspinner","Uhu","Elefant"};
+
 
     private final static LinkedBlockingDeque<AnnopipeJob> sumbitQueue = new LinkedBlockingDeque<>();
     private final static List<FutureTask<AnnopipeJob>> jobTasks = new LinkedList<>(); // Do not modify this list outside the scheduler's thread as this could lead to ConcurrentModificationExceptions!
@@ -20,39 +20,25 @@ public class PipelineMasterScheduler implements Runnable {
     private final ExecutorService executorService;
     private final ExecutorService watchdog = Executors.newFixedThreadPool(1);
     private final static List<PipelineSlaveScheduler> stageScheduler=new ArrayList<>();
+    private final static List<AnnopipeJob> finishedJobs=new ArrayList<>();
 
     public PipelineMasterScheduler(){
         // Initialize with a number of worker threads equal to the number of available cpu threads
-        this(Runtime.getRuntime().availableProcessors());
+        this(1);
+        System.out.println("initializing master scheduler");
+        stageScheduler.add(new PipelineSlaveScheduler(PipelineStage.TOKENIZER));
+        stageScheduler.add(new PipelineSlaveScheduler(PipelineStage.TREETAGGER));
+        stageScheduler.add(new PipelineSlaveScheduler(PipelineStage.BERKELEY_PARSER));
+        System.out.println("Master scheduler fully initialized");
     }
     public PipelineMasterScheduler(int threads){
-        executorService =  Executors.newFixedThreadPool(threads);
+        executorService =  Executors.newFixedThreadPool(2);
 
         // run the scheduler in a new thread
         watchdog.submit(this);
     }
-    public static void main(String[] args) {
 
 
-        List<AnnotationSentenceMock> sentences1=createMockSentences(8,"Ich");
-        ArrayList<PipelineStage> stages1=new ArrayList<>();
-        stages1.add(PipelineStage.TOKENIZER);
-        stages1.add(PipelineStage.TREETAGGER);
-        List<AnnotationSentenceMock> sentences2=createMockSentences(4,"Peter");
-        AnnopipeJob job1=new AnnopipeJob("JOB_1",stages1,sentences1);
-        stages1.add(PipelineStage.BERKELEY_PARSER);
-        AnnopipeJob job2=new AnnopipeJob("JOB_2",stages1,sentences2);
-        System.out.println(sentences1);
-        System.out.println(sentences2);
-    }
-
-    private static List<AnnotationSentenceMock> createMockSentences(int i, String person) {
-        List<AnnotationSentenceMock> sentenceMocks=new ArrayList<>();
-        for (int j = 0; j<animals.length&&(j <i); j++) {
-            sentenceMocks.add(new AnnotationSentenceMock(person+" hatte mal einen "+animals[j]+"."));
-        }
-        return sentenceMocks;
-    }
 
     public static PipelineSlaveScheduler getSchedulerForStage(PipelineStage stage){
         PipelineSlaveScheduler scheduler=null;
@@ -65,6 +51,10 @@ public class PipelineMasterScheduler implements Runnable {
         return scheduler;
     }
 
+    public void addJob(AnnopipeJob job){
+        sumbitQueue.offer(job);
+        System.out.println("SCHEDULER - Added job " + job.toString());
+    }
     @Override
     public void run() {
         try{
@@ -82,6 +72,8 @@ public class PipelineMasterScheduler implements Runnable {
                         // Check the job, if there are games left that need to be analyzed resubmit the job
                         if(!finishedJob.isFinished()) {
                             sumbitQueue.offer(finishedJob);
+                        }else{
+                            finishedJobs.add(finishedJob);
                         }
                     }
                 }

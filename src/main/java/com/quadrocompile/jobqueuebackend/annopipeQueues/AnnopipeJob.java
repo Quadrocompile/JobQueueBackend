@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class AnnopipeJob implements Callable<AnnopipeJob> {
@@ -13,7 +13,7 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
 
     // zeigt an, welche Sätze sich in welchem Stage befinden; SEHR wichtig. Diese Map ist für die Scheduler wichtig, damit sie
     // wissen, um welche sätze sie sich kümmern müssen!
-    final private Map< PipelineStage, List<AnnotationSentenceMock>> stageMap=new ConcurrentHashMap<>();
+    final private Map< PipelineStage, LinkedBlockingQueue<AnnotationSentenceMock>> stageMap=new ConcurrentHashMap<>();
     final private String jobID;
     final private ArrayList<PipelineStage> stages=new ArrayList<>();
     private int batchSize;
@@ -31,13 +31,23 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
     public AnnopipeJob(String jobID, List<PipelineStage> stages, List<AnnotationSentenceMock>sentences){
         this(sentences,jobID);
         this.stages.addAll(stages);
-        this.stageMap.put(stages.get(0),sentenceList);
     }
 
     @Override
     public AnnopipeJob call()  {
         System.out.println("Als AnnopipeJob ausgeführt");
-        return null;
+
+        PipelineStage firstStage=stages.get(0);
+        if(!stageMap.containsKey(firstStage)){
+            stageMap.put(firstStage,new LinkedBlockingQueue<>(sentenceList));
+            PipelineMasterScheduler.getSchedulerForStage(firstStage).addJob(new StageBoundAnnopipeJob(this,firstStage));
+            System.out.println("An Scheduler für "+firstStage+" übergeben.");
+        }else{
+            //System.out.println("Job "+jobID+" schon in der Pipeline vorhanden!");
+        }
+
+        // Return reference to this job
+        return this;
     }
 
     public List<AnnotationSentenceMock> getSentenceList() {
@@ -48,7 +58,7 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
         this.sentenceList = sentenceList;
     }
 
-    public Map<PipelineStage, List<AnnotationSentenceMock>> getStageMap() {
+    public Map<PipelineStage, LinkedBlockingQueue<AnnotationSentenceMock>> getStageMap() {
         return stageMap;
     }
 

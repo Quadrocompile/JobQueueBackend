@@ -2,45 +2,59 @@ package com.quadrocompile.jobqueuebackend.annopipeQueues;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
-    private AnnopipeJob job;
-    private PipelineStage stage;
+    private final AnnopipeJob job;
+    private final PipelineStage stage;
 
     StageBoundAnnopipeJob(AnnopipeJob job, PipelineStage stage){
         this.job=job;
         this.stage=stage;
+    }
 
+    public String getJobID(){
+        return job.getJobID();
     }
 
     @Override
     public StageBoundAnnopipeJob call()  {
-        List<AnnotationSentenceMock> sentences=job.getStageMap().get(stage);
-
-        List<AnnotationSentenceMock>batch=sentences.subList(0,Math.min(job.getBatchSize(),sentences.size()));
-
-        switch (stage) {
-            case TOKENIZER:
-                tokenize(batch);
-                break;
-            case TREETAGGER:
-                tag(batch);
-                break;
-            case BERKELEY_PARSER:
-                parse(batch);
-                break;
+        System.out.println("Als Stagebound Job("+stage+") ausgeführt!");
+        LinkedBlockingQueue<AnnotationSentenceMock> sentences=job.getStageMap().get(stage);
+        List<AnnotationSentenceMock> batch=new ArrayList<>();
+        for (int i = 0; i <job.getBatchSize() ; i++) {
+            AnnotationSentenceMock nextQueqed=sentences.poll();
+            if(nextQueqed!=null){
+                batch.add(nextQueqed);
+            }
         }
-        try {
-            pushToNextStage(batch);
-            sentences.removeAll(batch);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(batch.size()>0){
+            switch (stage) {
+                case TOKENIZER:
+                    tokenize(batch);
+                    break;
+                case TREETAGGER:
+                    tag(batch);
+                    break;
+                case BERKELEY_PARSER:
+                    parse(batch);
+                    break;
+            }
+            try {
+                pushToNextStage(batch);
+                sentences.removeAll(batch);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        return this;
+
+
+            return this;
     }
 
     //push the processed sentences into the next pipeline stage
@@ -51,22 +65,25 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
         //add to schedulers queue, if not present and not finished
         if(!job.getStageMap().containsKey(nextStage)&&nextStage!=PipelineStage.FINISHED){
             nextStageScheduler.addJob(new StageBoundAnnopipeJob(job,nextStage));
+            System.out.println("Job "+getJobID()+" finished in stage "+stage);
         }
 
         //add to stagemap under the next Stage (key)
-        Map<PipelineStage, List<AnnotationSentenceMock>> stageMap=job.getStageMap();
+        Map<PipelineStage, LinkedBlockingQueue<AnnotationSentenceMock>> stageMap=job.getStageMap();
         if(stageMap.containsKey(nextStage)){
-                stageMap.get(nextStage).addAll(sentences);
+            stageMap.get(nextStage).addAll(sentences);
         }else {
-            stageMap.put(nextStage,sentences);
+            stageMap.put(nextStage,new LinkedBlockingQueue<>(sentences));
         }
+        System.out.println("Push job "+getJobID()+" to next stage: "+nextStage);
 
     }
 
     //overwrite this with the real method!
     private void parse(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
-            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("TOKEN"+i);
+            System.out.println("Parsing sentence "+sentences.get(i));
+            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("ID"+i);
             jsonObject.put("PARSE"+i,"PARSE_THAT_SHIT"+i);
         }
 
@@ -75,19 +92,33 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     //overwrite this with the real method!
     private void tag(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
-            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("TOKEN"+i);
-            jsonObject.put("TAG"+i,"PARSE_THAT_SHIT"+i);
+            System.out.println("Tagging sentence "+sentences.get(i));
+            JSONObject jsonObject=sentences.get(i).getJson().getJSONObject("ID"+i);
+            jsonObject.put("TAG"+i,"TAG_THAT_SHIT"+i);
         }
     }
 
     //overwrite this with the real method!
-    private void tokenize(List<AnnotationSentenceMock> sennteces) {
-        for(AnnotationSentenceMock sentence:sennteces){
+    private void tokenize(List<AnnotationSentenceMock> sentences) {
+        for(AnnotationSentenceMock sentence:sentences){
+            System.out.println("Tokenizing sentence "+sentence);
             String[] tokens=sentence.getSentence().split(" ");
             for (int i = 0; i <tokens.length ; i++) {
+                JSONObject token=new JSONObject();
+                token.put("TOKEN"+i,tokens[i]);
                 JSONObject jsonObject=sentence.getJson();
-                jsonObject.put("TOKEN"+i,tokens[i]);
+                jsonObject.put("ID"+i,token);
             }
         }
+    }
+
+    public boolean isFinished() {
+
+        if(job.getStageMap().containsKey(stage)){
+            return job.getStageMap().get(stage).size()==job.getSentenceList().size()||job.isFinished();
+        }
+        else {
+            System.out.println("Job "+getJobID()+" not finished yet!");
+            return false;}
     }
 }
