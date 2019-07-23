@@ -82,7 +82,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     //overwrite this with the real method!
     private void parse(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
-            System.out.println("Parsing sentence "+sentences.get(i));
+            System.out.println(getJobID()+": Parsing sentence "+sentences.get(i));
             AnnotationSentenceMock sentence=sentences.get(i);
             JSONObject sentenceJson=sentence.getJson();
             for (int j = 0; j <sentenceJson.keySet().size() ; j++) {
@@ -97,7 +97,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     //overwrite this with the real method!
     private void tag(List<AnnotationSentenceMock> sentences) {
         for (int i = 0; i < sentences.size(); i++) {
-            System.out.println("Tagging sentence "+sentences.get(i));
+            System.out.println(getJobID()+": Tagging sentence "+sentences.get(i));
             AnnotationSentenceMock sentence=sentences.get(i);
             JSONObject sentenceJson=sentence.getJson();
             for (int j = 0; j <sentenceJson.keySet().size() ; j++) {
@@ -111,7 +111,7 @@ public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     //overwrite this with the real method!
     private void tokenize(List<AnnotationSentenceMock> sentences) {
         for(AnnotationSentenceMock sentence:sentences){
-            System.out.println("Tokenizing sentence "+sentence);
+            System.out.println(getJobID()+": Tokenizing sentence '"+sentence.getSentence()+"'");
             String[] tokens=sentence.getSentence().split(" ");
             for (int i = 0; i <tokens.length ; i++) {
                 JSONObject token=new JSONObject();

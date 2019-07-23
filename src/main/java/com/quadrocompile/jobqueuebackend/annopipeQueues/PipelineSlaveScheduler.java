@@ -3,7 +3,10 @@ package com.quadrocompile.jobqueuebackend.annopipeQueues;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingDeque;
 
 // ist zuständig für deine einzelne Stage der Jobs (Tokenizer, TreeTagger etc.)
 public class PipelineSlaveScheduler implements Runnable {
@@ -26,7 +29,7 @@ public class PipelineSlaveScheduler implements Runnable {
     }
 
     public void addJob(StageBoundAnnopipeJob newJob){
-        System.out.println("Addjob "+newJob.getJobID()+" to stage "+pipelineStage);
+        System.out.println("Add job "+newJob.getJobID()+" to stage "+pipelineStage);
         sumbitQueue.offer(newJob);
     }
 
@@ -54,7 +57,7 @@ public class PipelineSlaveScheduler implements Runnable {
 
                         // Check the job, if there are games left that need to be analyzed resubmit the job
                         if(!finishedJob.isFinished()) {
-                            System.out.println("Job"+finishedJob.getJobID()+ " is not finished in "+pipelineStage);
+                            System.out.println("Job "+finishedJob.getJobID()+ " is not finished in "+pipelineStage);
                             sumbitQueue.offer(finishedJob);
                         }
                     }
@@ -79,7 +82,7 @@ public class PipelineSlaveScheduler implements Runnable {
                 // Pause thread for ten second
                 try {
                     //Thread.sleep(10000);
-                    Thread.sleep(1000); // shorter duration for debug purposes
+                    Thread.sleep(400); // shorter duration for debug purposes
                 }
                 catch (InterruptedException ignored){
                 }
@@ -88,8 +91,6 @@ public class PipelineSlaveScheduler implements Runnable {
         catch (Exception ex){
             ex.printStackTrace();
         }
-
-        System.out.println("Shutting down JobScheduler");
 
     }
 }
