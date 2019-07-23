@@ -1,7 +1,7 @@
 package com.quadrocompile.jobqueuebackend.annopipeQueues;
 
 import org.json.JSONObject;
-
+//mit echtem AnnotationSentence ersetzen!
 public class AnnotationSentenceMock {
     private String sentence;
     private JSONObject json;

@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class AnnopipeJob implements Callable<AnnopipeJob> {
+
     private List<AnnotationSentenceMock> sentenceList=new ArrayList<>();
 
     // zeigt an, welche Sätze sich in welchem Stage befinden; SEHR wichtig. Diese Map ist für die Scheduler wichtig, damit sie
@@ -37,9 +38,13 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
     public AnnopipeJob call()  {
         //System.out.println("Als AnnopipeJob ausgeführt");
 
+        //falls der job neu in den master-scheduler gekommen ist, muss er zunächst dem ersten stage übergeben werden
+        // das kann variabel passieren (wenn der Job schon vorher tokenisiert wurde und nun noch dazu getaggt werden soll z.B.)
         PipelineStage firstStage=stages.get(0);
         if(!stageMap.containsKey(firstStage)){
+            //falls der job noch nicht in den ersten stage gelangt ist, muss man ihn erstellen
             stageMap.put(firstStage,new LinkedBlockingQueue<>(sentenceList));
+            //für jeden stage wird ein neuer StageboundJob erstellt, der den eigentlichen job wrapt
             PipelineMasterScheduler.getSchedulerForStage(firstStage).addJob(new StageBoundAnnopipeJob(this,firstStage));
             //System.out.println("An Scheduler für "+firstStage+" übergeben.");
         }else{

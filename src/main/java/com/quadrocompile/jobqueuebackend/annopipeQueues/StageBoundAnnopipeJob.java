@@ -10,6 +10,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class StageBoundAnnopipeJob implements Callable<StageBoundAnnopipeJob> {
     private final AnnopipeJob job;
+
+    //der stageBound job ist einer eindeutigen pipeline stage zugeordnet (Tokenizer etc.) und wird  nach
+    // seiner ausführung nicht mehr benötigt
     private final PipelineStage stage;
 
     StageBoundAnnopipeJob(AnnopipeJob job, PipelineStage stage){

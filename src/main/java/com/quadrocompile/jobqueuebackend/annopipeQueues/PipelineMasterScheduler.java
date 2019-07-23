@@ -19,6 +19,7 @@ public class PipelineMasterScheduler implements Runnable {
 
     private final ExecutorService executorService;
     private final ExecutorService watchdog = Executors.newFixedThreadPool(1);
+    //für jeden stage /teil der pipeline wird ein eigener slavescheduler erstellt
     private final static List<PipelineSlaveScheduler> stageScheduler=new ArrayList<>();
     private final static List<AnnopipeJob> finishedJobs=new ArrayList<>();
 
@@ -35,6 +36,7 @@ public class PipelineMasterScheduler implements Runnable {
         stageScheduler.add(new PipelineSlaveScheduler(PipelineStage.BERKELEY_PARSER));
         System.out.println("Master scheduler fully initialized");
     }
+
     public PipelineMasterScheduler(int threads){
         executorService =  Executors.newFixedThreadPool(2);
 
@@ -43,7 +45,8 @@ public class PipelineMasterScheduler implements Runnable {
     }
 
 
-
+// die methode wird aus den einzelnen jobs heraus aufgerufen. Wenn ein satz in die nächste stage geht, muss der
+    //scheduler per get geholt werden
     public static PipelineSlaveScheduler getSchedulerForStage(PipelineStage stage){
         PipelineSlaveScheduler scheduler=null;
         for (int i = 0; i <stageScheduler.size() ; i++) {
@@ -59,6 +62,7 @@ public class PipelineMasterScheduler implements Runnable {
         sumbitQueue.offer(job);
         System.out.println("SCHEDULER - Added job " + job.toString());
     }
+
     @Override
     public void run() {
         try{
@@ -112,7 +116,5 @@ public class PipelineMasterScheduler implements Runnable {
         catch (Exception ex){
             ex.printStackTrace();
         }
-
-        System.out.println("Shutting down JobScheduler");
     }
 }
