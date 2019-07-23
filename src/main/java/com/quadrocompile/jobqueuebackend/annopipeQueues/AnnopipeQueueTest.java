@@ -12,17 +12,18 @@ public class AnnopipeQueueTest {
         ArrayList<PipelineStage> stages1=new ArrayList<>();
         stages1.add(PipelineStage.TOKENIZER);
         stages1.add(PipelineStage.TREETAGGER);
-        AnnopipeJob job1=new AnnopipeJob("JOB_1",stages1,createMockSentences(33,"Ich"));
+
+        AnnopipeJob job1=new AnnopipeJob("JOB_1",stages1,createMockSentences(40,"Ich"));
         stages1.add(PipelineStage.BERKELEY_PARSER);
-        AnnopipeJob job2=new AnnopipeJob("JOB_2",stages1,createMockSentences(15,"Peter"));
-        AnnopipeJob job3=new AnnopipeJob("JOB_3",stages1,createMockSentences(7,"Hans"));
-        AnnopipeJob job4=new AnnopipeJob("JOB_4",stages1,createMockSentences(37,"Susi"));
         masterScheduler.addJob(job1);
-        //Thread.sleep(200);
+        Thread.sleep(100);
+        AnnopipeJob job2=new AnnopipeJob("JOB_2",stages1,createMockSentences(37,"Peter"));
         masterScheduler.addJob(job2);
-        //Thread.sleep(200);
+        Thread.sleep(100);
+        AnnopipeJob job3=new AnnopipeJob("JOB_3",stages1,createMockSentences(7,"Hans"));
         masterScheduler.addJob(job3);
-        //Thread.sleep(200);
+        Thread.sleep(200);
+        AnnopipeJob job4=new AnnopipeJob("JOB_4",stages1,createMockSentences(25,"Susi"));
         masterScheduler.addJob(job4);
         Thread.sleep(20000);
         List<AnnopipeJob> finishedSentences=PipelineMasterScheduler.getFinishedJobs();

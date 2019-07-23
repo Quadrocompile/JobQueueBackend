@@ -19,7 +19,7 @@ public class AnnopipeJob implements Callable<AnnopipeJob> {
     private int batchSize;
 
     public AnnopipeJob(String jobID){
-        this.jobID=jobID;
+        this.jobID=jobID+"@"+System.currentTimeMillis();
         this.batchSize=1;
     }
 
