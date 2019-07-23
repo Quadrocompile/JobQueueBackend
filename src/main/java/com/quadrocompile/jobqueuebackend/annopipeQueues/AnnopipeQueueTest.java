@@ -16,10 +16,11 @@ public class AnnopipeQueueTest {
         stages1.add(PipelineStage.TREETAGGER);
 
         AnnopipeJob job1=new AnnopipeJob("JOB_1",stages1,createMockSentences(40,"Ich"));
-        stages1.add(PipelineStage.BERKELEY_PARSER);
+
         //übergebe dem masterscheduler den job, den rest macht er mit seinen slaves aus!
         masterScheduler.addJob(job1);
         Thread.sleep(100);
+        stages1.add(PipelineStage.BERKELEY_PARSER);
         AnnopipeJob job2=new AnnopipeJob("JOB_2",stages1,createMockSentences(37,"Peter"));
         masterScheduler.addJob(job2);
         Thread.sleep(100);
